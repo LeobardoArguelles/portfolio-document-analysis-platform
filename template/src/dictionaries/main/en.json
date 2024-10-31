@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "template progressive web app",
-    "description": "A Progressive Web App"
+    "title": "document-analysis-platform",
+    "description": "Modern document analysis platform using AI to extract, classify, and summarize information from PDFs and images. "
   }
 }

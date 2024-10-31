@@ -1,6 +1,6 @@
 {
-  "name": "template progressive web app",
-  "short_name": "template",
+  "name": "document-analysis-platform",
+  "short_name": "doc-analyzer",
   "icons": [
     {
       "src": "/icons/android-chrome-192x192.png",
@@ -24,5 +24,5 @@
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "description": "A Progressive Web App"
+  "description": "Modern document analysis platform using AI to extract, classify, and summarize information from PDFs and images. "
 }

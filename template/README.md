@@ -1,6 +1,6 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-A Progressive Web App
-## template progressive web app
+Modern document analysis platform using AI to extract, classify, and summarize information from PDFs and images. 
+## document-analysis-platform
 
 First, run the development server:
 
