@@ -15,37 +15,30 @@ function getLocale(request: NextRequest): string {
 
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-  const host = request.headers.get('host') || '';
-  const isProd = process.env.NODE_ENV === 'production';
-  
-  const isAppSubdomain = isProd 
-    ? host.startsWith('app.') 
-    : host === 'localhost:3000' && pathname.startsWith('/app');
 
-  // Handle root path for both main domain and app subdomain
-  if (pathname === "/" || (isAppSubdomain && (pathname === "/app" || pathname === "/"))) {
+  console.log("pathname", pathname);
+
+  // Skip middleware for API routes
+  if (pathname.startsWith("/api/")) {
+    return NextResponse.next();
+  }
+
+  // Handle root path
+  if (pathname === "/") {
     const locale = getLocale(request);
-    const newPath = isAppSubdomain ? `/app/${locale}` : `/${locale}`;
-    return NextResponse.redirect(new URL(newPath, request.url));
+    return NextResponse.redirect(new URL(`/${locale}`, request.url));
   }
 
   // Check if the pathname is missing a locale
   const pathnameIsMissingLocale = i18n.locales.every(
-    (locale) => !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}` &&
-                (!isAppSubdomain || (!pathname.startsWith(`/app/${locale}/`) && pathname !== `/app/${locale}`))
+    (locale) => !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`
   );
 
   if (pathnameIsMissingLocale) {
     const locale = getLocale(request);
-    let newPathname = pathname;
-    
-    if (isAppSubdomain) {
-      newPathname = pathname.startsWith('/app') ? pathname : `/app${pathname}`;
-    }
-    
     return NextResponse.redirect(
       new URL(
-        `${newPathname.startsWith('/') ? '' : '/'}${isAppSubdomain ? 'app/' : ''}${locale}${newPathname}`,
+        `/${locale}${pathname.startsWith("/") ? "" : "/"}${pathname}`,
         request.url
       )
     );
@@ -54,6 +47,14 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|manifest.json|service-worker.js|sw.js|icon-192x192.png|icon-512x512.png|.*\..*).*)",
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public files with extensions
+     */
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.[\\w]+$).*)",
   ],
 };
