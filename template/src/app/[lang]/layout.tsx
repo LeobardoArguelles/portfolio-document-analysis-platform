@@ -19,7 +19,6 @@ export async function generateMetadata({
 }: {
   params: { lang: Locale };
 }): Promise<Metadata> {
-  console.log(lang);
   const dictionary: Dictionary = await getDictionary(lang);
   return {
     title: dictionary.meta.title,
@@ -322,9 +321,11 @@ export default async function RootLayout({
           href="/splash_screens/10.5__iPad_Air_landscape.png"
         />
       </head>
-      <body className={inter.className}>
+      <body className={`${inter.className} `}>
         <ThemeProvider attribute="class" defaultTheme="system">
-          {children}
+          <div className="min-h-screen bg-background dark:bg-background-dark">
+            {children}
+          </div>
         </ThemeProvider>
       </body>
     </html>
