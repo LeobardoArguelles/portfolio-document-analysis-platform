@@ -1,24 +1,25 @@
-// src/app/api/extract-text/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { parseContractJson } from "@/lib/contract-parser";
 
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-import { GoogleAIFileManager } from "@google/generative-ai/server";
 
 export async function POST(request: NextRequest) {
-  const genAI = new GoogleGenerativeAI(process.env.API_KEY);
-  const fileManager = new GoogleAIFileManager(process.env.API_KEY);
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  try {
+    // Get the text from the request body
+    const body = await request.json();
+    const { text } = body;
 
-  const uploadResponse = await fileManager.uploadFile(request.body.file, {
-    mimeType: "application/pdf",
-    directory: "Contract",
-  });
+    if (!text) {
+      return NextResponse.json(
+        { error: "No text provided in the request body" },
+        { status: 400 }
+      );
+    }
 
-  console.log(
-    `Uploaded file: ${uploadResponse.file.displayName} as: ${uploadResponse.file.uri}`
-  );
+    const genAI = new GoogleGenerativeAI(process.env.API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-  const prompt = `# Contract Analysis Instructions
+    const prompt = `# Contract Analysis Instructions
 
 You are an AI assistant specialized in contract analysis. Analyze the provided contract and extract the following key information:
 
@@ -71,7 +72,8 @@ Classify the contract as one of:
 - License Agreement
 - Purchase Order
 
-Present findings in a structured JSON format according to the provided schema specification.
+Present findings in a structured JSON format according to the provided schema specification. Only respond using JSON, either
+using this format, or a message indicating an error occurred.
 
 {
   "type": "object",
@@ -186,19 +188,24 @@ Present findings in a structured JSON format according to the provided schema sp
     }
   }
 }
-`;
 
-  const result = await model.generateContent([
-    {
-      fileData: {
-        mimeType: uploadResponse.file.mimeType,
-        fileUri: uploadResponse.file.uri,
-      },
-    },
-    { text: prompt },
-  ]);
+CONTRACT TEXT TO ANALYZE:
+${text}`;
 
-  console.log(result.response.text());
+    const result = await model.generateContent(prompt);
 
-  return NextResponse.json(result);
+    console.log("Response:", result.response.text());
+
+    const contractData = parseContractJson(result.response.text());
+
+    console.log("Contract Data:", contractData);
+
+    return NextResponse.json(contractData);
+  } catch (error) {
+    console.error("Error processing request:", error);
+    return NextResponse.json(
+      { error: "Failed to process request" },
+      { status: 500 }
+    );
+  }
 }

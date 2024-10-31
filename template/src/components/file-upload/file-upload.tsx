@@ -25,9 +25,44 @@ const FileUpload = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [extractedText, setExtractedText] = useState<string>("");
   const [isExtracting, setIsExtracting] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string>("");
 
-  // components/file-upload/file-upload.tsx
+  const processExtractedText = async (text: string) => {
+    try {
+      setIsProcessing(true);
+      setError("");
+
+      const response = await fetch("/api/process-text", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.error || `HTTP error! status: ${response.status}`
+        );
+      }
+
+      const data = await response.json();
+      console.log("Text processed successfully:", data);
+      return data;
+    } catch (err) {
+      console.error("Error processing text:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to process extracted text. Please try again."
+      );
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const extractTextFromPDF = async (file: File) => {
     try {
       setIsExtracting(true);
@@ -40,7 +75,6 @@ const FileUpload = ({
       const response = await fetch("/api/extract-text", {
         method: "POST",
         body: formData,
-        // Don't set Content-Type header - browser will set it automatically with boundary
       });
 
       console.log("Response status:", response.status);
@@ -54,8 +88,14 @@ const FileUpload = ({
 
       const data = await response.json();
       console.log("Extracted text received");
+
+      // Store the extracted text
       setExtractedText(data.text);
       onTextExtracted?.(data.text);
+
+      // Process the extracted text
+      const processedData = await processExtractedText(data.text);
+      console.log("Text processing complete:", processedData);
     } catch (err) {
       console.error("Error extracting text:", err);
       setError(
@@ -144,12 +184,12 @@ const FileUpload = ({
             onRemove={handleRemoveFile}
           />
 
-          {isExtracting ? (
+          {isExtracting || isProcessing ? (
             <Card className="p-4">
               <div className="flex items-center justify-center space-x-2">
                 <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-primary"></div>
                 <p className="text-sm text-muted-foreground">
-                  Extracting text...
+                  {isExtracting ? "Extracting text..." : "Processing text..."}
                 </p>
               </div>
             </Card>
