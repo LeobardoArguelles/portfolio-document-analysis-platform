@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 interface FileUploadProps {
   onFileSelect?: (file: File) => void;
   onTextExtracted?: (text: string) => void;
+  onTextProcessed?: (data: any) => void;
   maxSize?: number;
   accept?: string;
   className?: string;
@@ -17,6 +18,7 @@ interface FileUploadProps {
 const FileUpload = ({
   onFileSelect,
   onTextExtracted,
+  onTextProcessed,
   maxSize = 10,
   accept = "application/pdf",
   className,
@@ -24,6 +26,7 @@ const FileUpload = ({
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [extractedText, setExtractedText] = useState<string>("");
+  const [processedData, setProcessedData] = useState<any>(null);
   const [isExtracting, setIsExtracting] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string>("");
@@ -50,6 +53,8 @@ const FileUpload = ({
 
       const data = await response.json();
       console.log("Text processed successfully:", data);
+      setProcessedData(data);
+      onTextProcessed?.(data); // Call callback with processed data
       return data;
     } catch (err) {
       console.error("Error processing text:", err);
@@ -58,6 +63,7 @@ const FileUpload = ({
           ? err.message
           : "Failed to process extracted text. Please try again."
       );
+      return null;
     } finally {
       setIsProcessing(false);
     }
@@ -94,8 +100,8 @@ const FileUpload = ({
       onTextExtracted?.(data.text);
 
       // Process the extracted text
-      const processedData = await processExtractedText(data.text);
-      console.log("Text processing complete:", processedData);
+      const processedResult = await processExtractedText(data.text);
+      console.log("Text processing complete:", processedResult);
     } catch (err) {
       console.error("Error extracting text:", err);
       setError(
