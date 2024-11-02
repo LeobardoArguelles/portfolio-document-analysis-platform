@@ -3,7 +3,15 @@
 import { useState } from "react";
 import FileUpload from "@/components/file-upload/file-upload";
 import ContractAnalysisView from "@/components/dashboard";
-import { Card } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { FileQuestion } from "lucide-react";
 
 // Type for the contract data
 interface ContractData {
@@ -58,6 +66,18 @@ interface ContractData {
 export default function Home() {
   const [contractData, setContractData] = useState<ContractData | null>(null);
   const [error, setError] = useState<string>("");
+
+  const isValidContractType = (
+    type: string
+  ): type is ContractData["classification"] => {
+    return [
+      "SERVICE_AGREEMENT",
+      "NDA",
+      "EMPLOYMENT_CONTRACT",
+      "LICENSE_AGREEMENT",
+      "PURCHASE_ORDER",
+    ].includes(type);
+  };
 
   const handleProcessedText = (processedData: any) => {
     console.log("Processed data:", processedData);
@@ -115,11 +135,35 @@ export default function Home() {
         </Card>
       )}
 
-      {contractData && (
+      {contractData ? (
         <div className="mt-8">
-          <ContractAnalysisView data={contractData} />
+          {isValidContractType(contractData.classification) ? (
+            <ContractAnalysisView data={contractData} />
+          ) : (
+            <Card className="p-6">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileQuestion className="h-6 w-6" />
+                  Unrecognized Contract Type
+                </CardTitle>
+                <CardDescription>
+                  This contract type could not be automatically classified.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Alert>
+                  <AlertTitle>Manual Review Required</AlertTitle>
+                  <AlertDescription>
+                    This contract requires manual review by a legal
+                    professional. The system was unable to confidently classify
+                    its type.
+                  </AlertDescription>
+                </Alert>
+              </CardContent>
+            </Card>
+          )}
         </div>
-      )}
+      ) : null}
     </main>
   );
 }

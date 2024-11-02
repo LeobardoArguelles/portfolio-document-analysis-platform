@@ -183,7 +183,8 @@ using this format, or a message indicating an error occurred.
         "NDA",
         "EMPLOYMENT_CONTRACT",
         "LICENSE_AGREEMENT",
-        "PURCHASE_ORDER"
+        "PURCHASE_ORDER",
+        "OTHER"
       ]
     }
   }
