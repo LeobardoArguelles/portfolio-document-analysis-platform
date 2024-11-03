@@ -1,45 +1,63 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { i18n } from "@/i18n-config";
+import { NextRequest } from "next/server";
 import { match as matchLocale } from "@formatjs/intl-localematcher";
+import { i18n } from "./i18n-config";
 
-var Negotiator = require("negotiator");
-
+// Get the preferred locale
 function getLocale(request: NextRequest): string {
-  const negotiatorHeaders: Record<string, string> = {};
-  request.headers.forEach((value, key) => (negotiatorHeaders[key] = value));
-  const locales = [...i18n.locales];
-  let languages = new Negotiator({ headers: negotiatorHeaders }).languages();
-  const locale = matchLocale(languages, locales, i18n.defaultLocale);
-  return locale;
+  // Check if there's a cookie with preferred locale
+  const cookieLocale = request.cookies.get("NEXT_LOCALE")?.value;
+  if (cookieLocale && i18n.locales.includes(cookieLocale)) {
+    return cookieLocale;
+  }
+
+  // Get accepted languages from headers
+  const acceptedLanguages = request.headers.get("accept-language");
+  let languages = acceptedLanguages?.split(",")
+    .map(lang => lang.split(";")[0])
+    .map(lang => lang.trim()) || [];
+
+  // If no accepted languages, use default locale
+  if (languages.length === 0) {
+    return i18n.defaultLocale;
+  }
+
+  // Match the locale using intl-localematcher
+  try {
+    return matchLocale(
+      languages,
+      i18n.locales,
+      i18n.defaultLocale
+    );
+  } catch (error) {
+    return i18n.defaultLocale;
+  }
 }
 
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // Skip middleware for API routes
-  if (pathname.startsWith("/api/")) {
-    return NextResponse.next();
-  }
-
-  // Handle root path
-  if (pathname === "/") {
-    const locale = getLocale(request);
-    return NextResponse.redirect(new URL(`/${locale}`, request.url));
-  }
-
-  // Check if the pathname is missing a locale
+  // Check if pathname is missing a locale
   const pathnameIsMissingLocale = i18n.locales.every(
-    (locale) => !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`
+    locale => !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`
   );
+
+  // Skip middleware for specific files and paths
+  const shouldSkip = [
+    '/favicon.ico',
+    '/api/',
+    '/_next/',
+    '/images/',
+    '/service-worker.js',
+    '/manifest.json',
+    '/robots.txt'
+  ].some(path => pathname.startsWith(path));
+
+  if (shouldSkip) return;
 
   if (pathnameIsMissingLocale) {
     const locale = getLocale(request);
-    return NextResponse.redirect(
-      new URL(
-        `/${locale}${pathname.startsWith("/") ? "" : "/"}${pathname}`,
-        request.url
-      )
+    return Response.redirect(
+      new URL(`/${locale}${pathname}`, request.url)
     );
   }
 }
