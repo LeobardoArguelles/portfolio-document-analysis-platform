@@ -5,7 +5,7 @@ import { i18n } from "./i18n-config";
 // Get the preferred locale
 function getLocale(request: NextRequest): string {
   // Check if there's a cookie with preferred locale
-  const cookieLocale = request.cookies.get("NEXT_LOCALE")?.value;
+  const cookieLocale = request.cookies.get("NEXT_LOCALE")?.value as "en" | "es";
   if (cookieLocale && i18n.locales.includes(cookieLocale)) {
     return cookieLocale;
   }
