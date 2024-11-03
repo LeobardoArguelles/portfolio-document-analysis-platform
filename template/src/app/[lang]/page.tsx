@@ -3,6 +3,7 @@
 import { useState } from "react";
 import FileUpload from "@/components/file-upload/file-upload";
 import ContractAnalysisView from "@/components/dashboard";
+import CollapsibleSamples from "@/components/collapsible-samples";
 import {
   Card,
   CardContent,
@@ -134,6 +135,8 @@ export default function Home() {
           <p className="text-sm text-destructive">{error}</p>
         </Card>
       )}
+
+      {!contractData ? <CollapsibleSamples /> : null}
 
       {contractData ? (
         <div className="mt-8">

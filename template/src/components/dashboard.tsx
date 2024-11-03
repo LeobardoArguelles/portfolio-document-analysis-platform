@@ -34,7 +34,7 @@ type ContractData = {
     };
     dates: {
       effectiveDate: string;
-      terminationDate?: string; // Optional for some contract types
+      terminationDate?: string;
       renewalDates: string[];
     };
     financial?: {
@@ -123,9 +123,10 @@ const getContractHighlights = (data: ContractData) => {
         },
         {
           label: "Duration",
-          value: `From ${common.effectiveDate} to ${formatDate(
-            data.keyElements.dates.terminationDate
-          )}`,
+          value: `From ${common.effectiveDate} to ${
+            data.keyElements.dates.terminationDate &&
+            formatDate(data.keyElements.dates.terminationDate)
+          }`,
         },
       ],
     },
@@ -327,7 +328,8 @@ const ContractAnalysisView: React.FC<ContractAnalysisViewProps> = ({
               <div>
                 <p className="font-semibold">Termination Date</p>
                 <p className="text-sm">
-                  {formatDate(data.keyElements.dates.terminationDate)}
+                  {data.keyElements.dates.terminationDate &&
+                    formatDate(data.keyElements.dates.terminationDate)}
                 </p>
               </div>
               <div>
