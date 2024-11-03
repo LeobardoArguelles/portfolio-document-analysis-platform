@@ -16,8 +16,6 @@ function getLocale(request: NextRequest): string {
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  console.log("pathname", pathname);
-
   // Skip middleware for API routes
   if (pathname.startsWith("/api/")) {
     return NextResponse.next();

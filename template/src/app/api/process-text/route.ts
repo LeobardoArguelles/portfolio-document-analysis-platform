@@ -194,16 +194,10 @@ CONTRACT TEXT TO ANALYZE:
 ${text}`;
 
     const result = await model.generateContent(prompt);
-
-    console.log("Response:", result.response.text());
-
     const contractData = parseContractJson(result.response.text());
-
-    console.log("Contract Data:", contractData);
 
     return NextResponse.json(contractData);
   } catch (error) {
-    console.error("Error processing request:", error);
     return NextResponse.json(
       { error: "Failed to process request" },
       { status: 500 }

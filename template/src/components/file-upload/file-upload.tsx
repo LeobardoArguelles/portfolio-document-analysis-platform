@@ -52,7 +52,6 @@ const FileUpload = ({
       }
 
       const data = await response.json();
-      console.log("Text processed successfully:", data);
       setProcessedData(data);
       onTextProcessed?.(data); // Call callback with processed data
       return data;
@@ -77,13 +76,10 @@ const FileUpload = ({
       const formData = new FormData();
       formData.append("file", file);
 
-      console.log("Sending request to extract text...");
       const response = await fetch("/api/extract-text", {
         method: "POST",
         body: formData,
       });
-
-      console.log("Response status:", response.status);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -93,7 +89,6 @@ const FileUpload = ({
       }
 
       const data = await response.json();
-      console.log("Extracted text received");
 
       // Store the extracted text
       setExtractedText(data.text);
@@ -101,7 +96,6 @@ const FileUpload = ({
 
       // Process the extracted text
       const processedResult = await processExtractedText(data.text);
-      console.log("Text processing complete:", processedResult);
     } catch (err) {
       console.error("Error extracting text:", err);
       setError(
