@@ -11,7 +11,7 @@ export const getDictionary = async (locale: Locale) => {
   if (dictionaries[locale]) {
     return dictionaries[locale]();
   } else {
-    console.warn(`Dictionary not found for locale: ${locale}`);
+    console.warn(`Dictionary for locale "${locale}" not found.`);
     // Return a default dictionary or handle the case as needed
     return dictionaries["en"](); // Example: fallback to English dictionary
   }
